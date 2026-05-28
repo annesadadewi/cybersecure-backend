@@ -10,19 +10,29 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+   
     // Fungsi Register (Daftar)
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'name' => 'required|string|min:3|max:75',
+            'email' => 'required|string|email|min:8|max:65|ends_with:@gmail.com|unique:users',
+            'password' => 'required|string|min:3|max:20|confirmed',
+        ], [
+            'name.min' => 'Nama minimal harus 3 karakter.',
+            'name.max' => 'Nama maksimal 75 karakter.',
+            'email.min' => 'Email minimal harus 8 karakter.',
+            'email.max' => 'Email maksimal 65 karakter.',
+            'email.ends_with' => 'Email harus menggunakan domain @gmail.com.',
+            'password.min' => 'Kata sandi minimal harus 3 karakter.',
+            'password.max' => 'Kata sandi maksimal 20 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.'
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => $request->password, // <--- Hapus Hash::make-nya, biarkan polos
         ]);
 
         return response()->json([
@@ -35,8 +45,14 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => 'required|email|min:8|max:65|ends_with:@gmail.com',
+            'password' => 'required|string|min:3|max:20',
+        ], [
+            'email.min' => 'Email minimal harus 8 karakter.',
+            'email.max' => 'Email maksimal 65 karakter.',
+            'email.ends_with' => 'Email harus menggunakan domain @gmail.com.',
+            'password.min' => 'Kata sandi minimal harus 3 karakter.',
+            'password.max' => 'Kata sandi maksimal 20 karakter.'
         ]);
 
         $user = User::where('email', $request->email)->first();

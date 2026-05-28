@@ -19,7 +19,10 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'test@gmail.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
         ]);
+
+        $this->call(MockTransactionSeeder::class);
     }
 }
