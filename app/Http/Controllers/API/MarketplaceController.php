@@ -91,11 +91,14 @@ class MarketplaceController extends Controller
                 $variation = rand(-15, 15) / 100;
                 $finalAmount = (int) ($prod['amount'] * (1 + $variation));
 
+                $isRefund = rand(1, 100) <= 18;
+
                 MockTransaction::create([
                     'user_id' => $user->id,
                     'marketplace_name' => $mpName,
                     'product_name' => $prod['name'],
                     'amount' => $finalAmount,
+                    'type' => $isRefund ? 'refund' : 'income',
                     'transaction_date' => $date,
                 ]);
             }
@@ -116,9 +119,6 @@ class MarketplaceController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
-        // We can either set status to disconnected or delete the connection.
-        // The prompt says: "Jika status toko user adalah 'connected', backend harus bisa mengirimkan..."
-        // Setting status to 'disconnected' allows toggling status in UI.
         $marketplace->update(['status' => 'disconnected']);
 
         return response()->json([
@@ -134,15 +134,13 @@ class MarketplaceController extends Controller
     {
         $user = $request->user();
 
-        // Get names of marketplaces that are currently connected
         $connectedMarketplaces = UserMarketplace::where('user_id', $user->id)
             ->where('status', 'connected')
             ->pluck('marketplace_name');
 
-        // Fetch transactions for these connected marketplaces
         $transactions = MockTransaction::where('user_id', $user->id)
             ->whereIn('marketplace_name', $connectedMarketplaces)
-            ->orderBy('transaction_date', 'asc')
+            ->orderBy('transaction_date', 'desc')
             ->get();
 
         return response()->json($transactions);

@@ -24,5 +24,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(MockTransactionSeeder::class);
+        $this->call(UserNotificationSeeder::class);
     }
 }

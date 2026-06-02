@@ -15,16 +15,16 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|min:3|max:75',
+            'name' => 'required|string|min:3|max:65',
             'email' => 'required|string|email|min:8|max:65|ends_with:@gmail.com|unique:users',
-            'password' => 'required|string|min:3|max:20|confirmed',
+            'password' => 'required|string|min:8|max:20|confirmed',
         ], [
             'name.min' => 'Nama minimal harus 3 karakter.',
-            'name.max' => 'Nama maksimal 75 karakter.',
+            'name.max' => 'Nama maksimal 65 karakter.',
             'email.min' => 'Email minimal harus 8 karakter.',
             'email.max' => 'Email maksimal 65 karakter.',
             'email.ends_with' => 'Email harus menggunakan domain @gmail.com.',
-            'password.min' => 'Kata sandi minimal harus 3 karakter.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
             'password.max' => 'Kata sandi maksimal 20 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.'
         ]);
@@ -37,7 +37,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User berhasil didaftarkan',
-            'user' => $user
+            'user' => $this->userPayload($user),
         ], 201);
     }
 
@@ -46,12 +46,12 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email|min:8|max:65|ends_with:@gmail.com',
-            'password' => 'required|string|min:3|max:20',
+            'password' => 'required|string|min:8|max:20',
         ], [
             'email.min' => 'Email minimal harus 8 karakter.',
             'email.max' => 'Email maksimal 65 karakter.',
             'email.ends_with' => 'Email harus menggunakan domain @gmail.com.',
-            'password.min' => 'Kata sandi minimal harus 3 karakter.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
             'password.max' => 'Kata sandi maksimal 20 karakter.'
         ]);
 
@@ -69,8 +69,20 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login berhasil',
             'token' => $token,
-            'user' => $user
+            'user' => $this->userPayload($user),
         ]);
+    }
+
+    private function userPayload(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'profile_photo' => $user->profile_photo,
+            'profile_photo_url' => $user->profile_photo_url,
+        ];
     }
 
     // Fungsi Logout (Keluar)

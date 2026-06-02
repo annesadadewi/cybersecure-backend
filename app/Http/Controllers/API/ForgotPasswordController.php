@@ -75,9 +75,9 @@ class ForgotPasswordController extends Controller
         $request->validate([
             'email' => 'required|email',
             'otp' => 'required|string|size:4',
-            'password' => 'required|string|min:3|max:20|confirmed',
+            'password' => 'required|string|min:8|max:20|confirmed',
         ], [
-            'password.min' => 'Kata sandi minimal harus 3 karakter.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
             'password.max' => 'Kata sandi maksimal 20 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.'
         ]);
