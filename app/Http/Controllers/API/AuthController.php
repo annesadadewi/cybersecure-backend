@@ -31,9 +31,9 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => $request->password, // <--- Hapus Hash::make-nya, biarkan polos
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
         ]);
 
         // Auto-seed data aktivitas: marketplace, transaksi Jan–Jun 2026, notifikasi
