@@ -1,58 +1,147 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🔐 CyberSecure — Backend API (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend REST API untuk aplikasi CyberSecure, dibangun dengan Laravel + Sanctum (token auth) + SQLite.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ⚡ Quick Setup (Wajib diikuti urutan ini!)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Clone & install dependencies
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <repo-url> cybersecure-backend
+cd cybersecure-backend
+composer install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Buat file `.env`
 
-## Contributing
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> ⚠️ File `.env` tidak ikut di-commit. Kamu **wajib** membuatnya dari `.env.example`.
 
-## Code of Conduct
+### 3. Buat file database SQLite
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+File `database/database.sqlite` **tidak ikut di-commit** (di-gitignore). Buat dulu:
 
-## Security Vulnerabilities
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType File -Path database\database.sqlite
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Mac / Linux:**
+```bash
+touch database/database.sqlite
+```
 
-## License
+### 4. Jalankan migrasi + seeder
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate --seed
+```
+
+> Perintah ini akan membuat semua tabel dan mengisi data mock (marketplace, transaksi, notifikasi, anomali).
+> 
+> Akun demo yang dibuat otomatis:
+> - **Email:** `test@gmail.com`
+> - **Password:** `password`
+
+### 5. Jalankan server
+
+```bash
+php artisan serve
+```
+
+Server berjalan di `http://127.0.0.1:8000`.
+
+---
+
+## 🔗 Hubungkan ke Frontend
+
+Pastikan frontend (`cybersecure-frontend`) menggunakan base URL:
+```
+http://127.0.0.1:8000/api
+```
+
+Frontend dev server harus berjalan di `http://localhost:5173` agar CORS tidak error.
+
+---
+
+## ❓ Troubleshooting
+
+### Semua endpoint selain login/register error / data kosong
+
+Penyebab paling umum:
+
+| Masalah | Solusi |
+|---|---|
+| File `.env` tidak ada | `cp .env.example .env` → `php artisan key:generate` |
+| File `database.sqlite` tidak ada | Buat file kosong (lihat langkah 3) |
+| Migrasi belum dijalankan | `php artisan migrate` |
+| Seeder belum dijalankan | `php artisan db:seed` |
+| Ingin reset total | `php artisan migrate:fresh --seed` |
+
+### Error `SQLSTATE[HY000]: General error: 14 unable to open database file`
+
+File `database/database.sqlite` belum dibuat. Jalankan langkah 3.
+
+### Error `419 CSRF token mismatch` atau token expired
+
+```bash
+php artisan config:clear
+php artisan cache:clear
+```
+
+### Akun yang sudah ada tidak punya data (transaksi/notifikasi kosong)
+
+Jalankan seeder tanpa reset data:
+```bash
+php artisan db:seed
+```
+
+---
+
+## 📁 Struktur Penting
+
+```
+app/
+  Http/Controllers/API/     ← Semua endpoint API
+  Services/UserActivitySeeder.php  ← Logic seed data per user
+database/
+  migrations/               ← Skema tabel
+  seeders/                  ← Data awal / mock data
+routes/
+  api.php                   ← Semua route API
+```
+
+---
+
+## 🛡️ Auth
+
+Menggunakan **Laravel Sanctum**. Setelah login, frontend menerima `token` yang harus dikirim di header:
+
+```
+Authorization: Bearer <token>
+```
+
+Semua endpoint selain `/login`, `/register`, dan `/forgot-password` membutuhkan token ini.
+
+---
+
+## 📋 Endpoint Utama
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| POST | `/api/login` | Login, dapat token |
+| POST | `/api/register` | Daftar akun baru |
+| GET | `/api/user` | Info user login *(auth)* |
+| GET | `/api/marketplaces` | Daftar marketplace terhubung *(auth)* |
+| GET | `/api/transactions` | Log transaksi *(auth)* |
+| GET | `/api/transactions/summary` | Ringkasan dashboard *(auth)* |
+| GET | `/api/anomalies` | Daftar anomali *(auth)* |
+| GET | `/api/anomalies/metrics` | Metrik keamanan *(auth)* |
+| GET | `/api/notifications` | Notifikasi *(auth)* |
+| GET | `/api/reports/monthly` | Laporan bulanan *(auth)* |
