@@ -14,126 +14,20 @@ class AnomalyController extends Controller
             return [];
         }
 
-        // Check active core systems from request parameters
-        $hasDb = $request->query('core_db') === '1';
-        $hasMail = $request->query('core_mail') === '1';
-        $hasPayment = $request->query('core_payment') === '1';
-        $hasWeb = $request->query('core_web') === '1';
-
-        $hasCustomDb = false;
-        $hasCustomMail = false;
-        $hasCustomPayment = false;
-        $hasCustomWeb = false;
-
-        foreach ($request->query() as $key => $val) {
-            if ($val === '1') {
-                if (str_starts_with($key, 'custom_database_')) $hasCustomDb = true;
-                if (str_starts_with($key, 'custom_email_')) $hasCustomMail = true;
-                if (str_starts_with($key, 'custom_payment_')) $hasCustomPayment = true;
-                if (str_starts_with($key, 'custom_web_')) $hasCustomWeb = true;
-            }
-        }
-
-        // Jika tidak ada filter params sama sekali, tampilkan semua anomali keamanan (default universal)
-        $hasAnyCoreParam = $hasDb || $hasMail || $hasPayment || $hasWeb
-            || $hasCustomDb || $hasCustomMail || $hasCustomPayment || $hasCustomWeb;
-
-        $isDbActive = $hasAnyCoreParam ? ($hasDb || $hasCustomDb) : true;
-        $isMailActive = $hasAnyCoreParam ? ($hasMail || $hasCustomMail) : true;
-        $isPaymentActive = $hasAnyCoreParam ? ($hasPayment || $hasCustomPayment) : true;
-        $isWebActive = $hasAnyCoreParam ? ($hasWeb || $hasCustomWeb) : true;
-
-        $incidents = [];
-
-        // sec-1, sec-2, sec-4, sec-5, sec-6 are associated with Web Portal
-        if ($isWebActive) {
-            $incidents[] = [
-                'id' => 'sec-1',
-                'time' => '10:24:15 WIB',
-                'activity' => 'Brute-Force Login',
-                'location' => '182.253.42.9 (Jakarta)',
-                'recommendation' => 'Saran AI: Segera blokir IP permanen dan reset kata sandi akun terkait.',
-                'risk_level' => 'high',
-                'status' => 'Open',
-            ];
-            $incidents[] = [
-                'id' => 'sec-2',
-                'time' => '09:15:30 WIB',
-                'activity' => 'Deteksi Anomali Geografis',
-                'location' => '103.14.22.18 (Singapura)',
-                'recommendation' => 'Saran AI: Paksa logout sesi aktif dan minta verifikasi ulang saat login.',
-                'risk_level' => 'medium',
-                'status' => 'Open',
-            ];
-            $incidents[] = [
-                'id' => 'sec-4',
-                'time' => '06:42:08 WIB',
-                'activity' => 'Lonjakan Percobaan Login Gagal',
-                'location' => '114.122.5.44 (Surabaya)',
-                'recommendation' => 'Saran AI: Aktifkan rate limiting dan pantau pola credential stuffing.',
-                'risk_level' => 'medium',
-                'status' => 'Open',
-            ];
-            $incidents[] = [
-                'id' => 'sec-5',
-                'time' => '05:18:55 WIB',
-                'activity' => 'Perubahan Konfigurasi Firewall',
-                'location' => '10.0.4.22 (Internal)',
-                'recommendation' => 'Saran AI: Verifikasi perubahan dengan tim infrastruktur dan rollback jika tidak sah.',
-                'risk_level' => 'medium',
-                'status' => 'Open',
-            ];
-            $incidents[] = [
-                'id' => 'sec-6',
-                'time' => '04:55:01 WIB',
-                'activity' => 'Scan Port Tidak Diizinkan',
-                'location' => '45.33.12.8 (Amerika Serikat)',
-                'recommendation' => 'Saran AI: Blokir IP sumber dan aktifkan IDS signature terbaru.',
-                'risk_level' => 'medium',
-                'status' => 'Open',
-            ];
-        }
-
-        // sec-3 is associated with Payment Gateways
-        if ($isPaymentActive) {
-            $incidents[] = [
-                'id' => 'sec-3',
-                'time' => '07:05:12 WIB',
-                'activity' => 'Upaya Akses API Tidak Sah',
-                'location' => '202.89.24.102 (Rusia)',
-                'recommendation' => 'Saran AI: Cabut akses token sementara dan lakukan rotasi Secret Key API.',
-                'risk_level' => 'high',
-                'status' => 'In Review',
-            ];
-        }
-
-        // sec-7 is associated with Email Server
-        if ($isMailActive) {
-            $incidents[] = [
-                'id' => 'sec-7',
-                'time' => '03:30:44 WIB',
-                'activity' => 'Login dari Perangkat Tidak Dikenal',
-                'location' => '36.66.201.12 (Bandung)',
-                'recommendation' => 'Saran AI: Kirim OTP verifikasi dan minta konfirmasi ke pemilik akun.',
-                'risk_level' => 'low',
-                'status' => 'Ignored',
-            ];
-        }
-
-        // sec-8 is associated with Database
-        if ($isDbActive) {
-            $incidents[] = [
-                'id' => 'sec-8',
-                'time' => '02:12:33 WIB',
-                'activity' => 'Akses File Sensitif Berulang',
-                'location' => '192.168.1.55 (Internal)',
+        // Hanya mengembalikan 1 insiden keamanan yang ditampilkan di modal tab Keamanan.
+        // Insiden lain (sec-1..7) dihapus karena tidak ditampilkan di frontend
+        // sehingga metrik dan diagram pie konsisten dengan apa yang terlihat user.
+        return [
+            [
+                'id'             => 'sec-8',
+                'time'           => '02:12:33 WIB',
+                'activity'       => 'Akses File Sensitif Berulang',
+                'location'       => '192.168.1.55 (Internal)',
                 'recommendation' => 'Saran AI: Audit hak akses role dan batasi permission folder /config.',
-                'risk_level' => 'low',
-                'status' => 'Open',
-            ];
-        }
-
-        return $incidents;
+                'risk_level'     => 'low',
+                'status'         => 'Open',
+            ],
+        ];
     }
 
     private function getFilteredTransactionIncidents(Request $request): array
