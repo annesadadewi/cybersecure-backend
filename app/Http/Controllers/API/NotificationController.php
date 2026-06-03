@@ -14,7 +14,7 @@ class NotificationController extends Controller
     {
         return match ($category) {
             'income' => ['label' => 'Pemasukan', 'badge' => 'green', 'is_refund' => false],
-            'refund' => ['label' => 'Pengembalian Dana', 'badge' => 'red', 'is_refund' => true],
+            'refund' => ['label' => 'Refund', 'badge' => 'red', 'is_refund' => true],
             'cancelled' => ['label' => 'Transaksi Dibatalkan', 'badge' => 'grey', 'is_refund' => false],
             'return_request' => ['label' => 'Permintaan Retur Baru', 'badge' => 'yellow', 'is_refund' => false],
             'sync' => ['label' => 'Proses Sinkronisasi Toko', 'badge' => 'yellow', 'is_refund' => false],
@@ -52,12 +52,7 @@ class NotificationController extends Controller
      */
     private function syncFromTransactions($user): void
     {
-        $connected = UserMarketplace::where('user_id', $user->id)
-            ->where('status', 'connected')
-            ->pluck('marketplace_name');
-
         $transactions = MockTransaction::where('user_id', $user->id)
-            ->whereIn('marketplace_name', $connected)
             ->orderBy('transaction_date', 'desc')
             ->limit(30)
             ->get();
@@ -76,7 +71,7 @@ class NotificationController extends Controller
                 'category' => $category,
                 'title' => $meta['label'],
                 'message' => $category === 'refund'
-                    ? "Pengembalian dana: {$tx->product_name} ({$tx->marketplace_name})"
+                    ? "Refund: {$tx->product_name} ({$tx->marketplace_name})"
                     : "Transaksi masuk baru: {$tx->product_name} ({$tx->marketplace_name})",
                 'marketplace_name' => $tx->marketplace_name,
                 'product_name' => $tx->product_name,

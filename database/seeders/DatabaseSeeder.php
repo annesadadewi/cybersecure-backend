@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Services\UserActivitySeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -17,13 +18,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@gmail.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password'),
         ]);
 
-        $this->call(MockTransactionSeeder::class);
-        $this->call(UserNotificationSeeder::class);
+        // Seed data aktivitas (marketplace, transaksi, notifikasi) untuk user baru
+        (new UserActivitySeeder())->seedForUser($user);
+
+        // Seed juga semua user lama yang belum punya data
+        (new UserActivitySeeder())->seedForAllUsers();
     }
 }

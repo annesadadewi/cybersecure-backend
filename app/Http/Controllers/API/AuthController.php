@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\UserActivitySeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -35,6 +36,13 @@ class AuthController extends Controller
                 'password' => $request->password, // <--- Hapus Hash::make-nya, biarkan polos
         ]);
 
+        // Auto-seed data aktivitas: marketplace, transaksi Jan–Jun 2026, notifikasi
+        try {
+            (new UserActivitySeeder())->seedForUser($user);
+        } catch (\Throwable $e) {
+            report($e); // Log error tapi jangan gagalkan registrasi
+        }
+
         return response()->json([
             'message' => 'User berhasil didaftarkan',
             'user' => $this->userPayload($user),
@@ -61,6 +69,16 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => ['Email atau password salah.'],
             ]);
+        }
+
+        // Auto-seed data aktivitas jika akun belum punya transaksi (atau jika akun kayla23@gmail.com untuk testing)
+        try {
+            $hasNoTransactions = !\App\Models\MockTransaction::where('user_id', $user->id)->exists();
+            if ($hasNoTransactions || $user->email === 'kayla23@gmail.com') {
+                (new UserActivitySeeder())->seedForUser($user);
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         // Membuat Token (Sanctum)

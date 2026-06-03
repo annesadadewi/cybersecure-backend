@@ -34,10 +34,14 @@ class AnomalyController extends Controller
             }
         }
 
-        $isDbActive = $hasDb || $hasCustomDb;
-        $isMailActive = $hasMail || $hasCustomMail;
-        $isPaymentActive = $hasPayment || $hasCustomPayment;
-        $isWebActive = $hasWeb || $hasCustomWeb;
+        // Jika tidak ada filter params sama sekali, tampilkan semua anomali keamanan (default universal)
+        $hasAnyCoreParam = $hasDb || $hasMail || $hasPayment || $hasWeb
+            || $hasCustomDb || $hasCustomMail || $hasCustomPayment || $hasCustomWeb;
+
+        $isDbActive = $hasAnyCoreParam ? ($hasDb || $hasCustomDb) : true;
+        $isMailActive = $hasAnyCoreParam ? ($hasMail || $hasCustomMail) : true;
+        $isPaymentActive = $hasAnyCoreParam ? ($hasPayment || $hasCustomPayment) : true;
+        $isWebActive = $hasAnyCoreParam ? ($hasWeb || $hasCustomWeb) : true;
 
         $incidents = [];
 
@@ -139,88 +143,73 @@ class AnomalyController extends Controller
             return [];
         }
 
-        $connectedMps = \App\Models\UserMarketplace::where('user_id', $user->id)
-            ->where('status', 'connected')
-            ->pluck('marketplace_name')
-            ->map(fn($name) => strtolower(trim($name)))
-            ->toArray();
-
         $incidents = [];
 
-        if (in_array('shopee', $connectedMps)) {
-            $incidents[] = [
-                'id' => 'tx-1',
-                'time' => '11:08:22 WIB',
-                'activity' => 'Retur Bermasalah / Potensi Fraud',
-                'marketplace' => 'Shopee',
-                'amount' => 1250000,
-                'recommendation' => 'Saran AI: Tahan refund 48 jam, verifikasi bukti unboxing & lacak pola buyer.',
-                'risk_level' => 'high',
-                'status' => 'Open',
-            ];
-            $incidents[] = [
-                'id' => 'tx-5',
-                'time' => '07:40:02 WIB',
-                'activity' => 'Pola Refund Berulang (Same Buyer)',
-                'marketplace' => 'Shopee',
-                'amount' => 310000,
-                'recommendation' => 'Saran AI: Blacklist buyer ID sementara dan aktifkan alert otomatis.',
-                'risk_level' => 'medium',
-                'status' => 'Open',
-            ];
-        }
+        $incidents[] = [
+            'id' => 'tx-1',
+            'time' => '11:08:22 WIB',
+            'activity' => 'Retur Bermasalah / Potensi Fraud',
+            'marketplace' => 'Shopee',
+            'amount' => 1250000,
+            'recommendation' => 'Saran AI: Tahan refund 48 jam, verifikasi bukti unboxing & lacak pola buyer.',
+            'risk_level' => 'high',
+            'status' => 'Open',
+        ];
+        
+        $incidents[] = [
+            'id' => 'tx-5',
+            'time' => '07:40:02 WIB',
+            'activity' => 'Pola Refund Berulang (Same Buyer)',
+            'marketplace' => 'Shopee',
+            'amount' => 310000,
+            'recommendation' => 'Saran AI: Blacklist buyer ID sementara dan aktifkan alert otomatis.',
+            'risk_level' => 'medium',
+            'status' => 'Open',
+        ];
 
-        if (in_array('tokopedia', $connectedMps)) {
-            $incidents[] = [
-                'id' => 'tx-2',
-                'time' => '10:45:10 WIB',
-                'activity' => 'Indikasi Dobel Refund',
-                'marketplace' => 'Tokopedia',
-                'amount' => 890000,
-                'recommendation' => 'Saran AI: Cocokkan ID pesanan dengan riwayat refund sebelumnya di dashboard marketplace.',
-                'risk_level' => 'high',
-                'status' => 'In Review',
-            ];
-        }
+        $incidents[] = [
+            'id' => 'tx-2',
+            'time' => '10:45:10 WIB',
+            'activity' => 'Indikasi Dobel Refund',
+            'marketplace' => 'Tokopedia',
+            'amount' => 890000,
+            'recommendation' => 'Saran AI: Cocokkan ID pesanan dengan riwayat refund sebelumnya di dashboard marketplace.',
+            'risk_level' => 'high',
+            'status' => 'In Review',
+        ];
 
-        if (in_array('lazada', $connectedMps)) {
-            $incidents[] = [
-                'id' => 'tx-3',
-                'time' => '09:22:44 WIB',
-                'activity' => 'Transaksi Nilai Tidak Wajar',
-                'marketplace' => 'Lazada',
-                'amount' => 45000,
-                'recommendation' => 'Saran AI: Bandingkan harga katalog dan cek apakah ada manipulasi diskon flash sale.',
-                'risk_level' => 'low',
-                'status' => 'Open',
-            ];
-        }
+        $incidents[] = [
+            'id' => 'tx-3',
+            'time' => '09:22:44 WIB',
+            'activity' => 'Transaksi Nilai Tidak Wajar',
+            'marketplace' => 'Lazada',
+            'amount' => 45000,
+            'recommendation' => 'Saran AI: Bandingkan harga katalog dan cek apakah ada manipulasi diskon flash sale.',
+            'risk_level' => 'low',
+            'status' => 'Open',
+        ];
 
-        if (in_array('blibli', $connectedMps)) {
-            $incidents[] = [
-                'id' => 'tx-4',
-                'time' => '08:55:18 WIB',
-                'activity' => 'Retur Bermasalah / Potensi Fraud',
-                'marketplace' => 'Blibli',
-                'amount' => 620000,
-                'recommendation' => 'Saran AI: Eskalasi ke tim CS marketplace dengan bukti foto produk rusak palsu.',
-                'risk_level' => 'high',
-                'status' => 'Open',
-            ];
-        }
+        $incidents[] = [
+            'id' => 'tx-4',
+            'time' => '08:55:18 WIB',
+            'activity' => 'Retur Bermasalah / Potensi Fraud',
+            'marketplace' => 'Blibli',
+            'amount' => 620000,
+            'recommendation' => 'Saran AI: Eskalasi ke tim CS marketplace dengan bukti foto produk rusak palsu.',
+            'risk_level' => 'high',
+            'status' => 'Open',
+        ];
 
-        if (in_array('bukalapak', $connectedMps)) {
-            $incidents[] = [
-                'id' => 'tx-6',
-                'time' => '06:18:27 WIB',
-                'activity' => 'Sinkronisasi Stok Gagal Berulang',
-                'marketplace' => 'Bukalapak',
-                'amount' => 0,
-                'recommendation' => 'Saran AI: Re-authenticate token API toko dan jalankan sync manual.',
-                'risk_level' => 'low',
-                'status' => 'Open',
-            ];
-        }
+        $incidents[] = [
+            'id' => 'tx-6',
+            'time' => '06:18:27 WIB',
+            'activity' => 'Sinkronisasi Stok Gagal Berulang',
+            'marketplace' => 'Bukalapak',
+            'amount' => 0,
+            'recommendation' => 'Saran AI: Re-authenticate token API toko dan jalankan sync manual.',
+            'risk_level' => 'low',
+            'status' => 'Open',
+        ];
 
         return $incidents;
     }
@@ -250,6 +239,9 @@ class AnomalyController extends Controller
             'low_risk' => $risk['low'],
             'total' => count($all),
             'summary_label' => "{$risk['high']} High · {$risk['medium']} Medium · {$risk['low']} Low",
+            'system_integrity' => true,
+            'system_integrity_status' => 'Active',
+            'system_integrity_score' => 100,
         ]);
     }
 
@@ -262,6 +254,9 @@ class AnomalyController extends Controller
             return response()->json([
                 'incidents' => $tx,
                 'metrics' => $this->countByRisk($tx),
+                'system_integrity' => true,
+                'system_integrity_status' => 'Active',
+                'system_integrity_score' => 100,
             ]);
         }
 
@@ -269,6 +264,9 @@ class AnomalyController extends Controller
         return response()->json([
             'incidents' => $sec,
             'metrics' => $this->countByRisk($sec),
+            'system_integrity' => true,
+            'system_integrity_status' => 'Active',
+            'system_integrity_score' => 100,
         ]);
     }
 
