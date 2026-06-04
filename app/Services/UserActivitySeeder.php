@@ -18,7 +18,7 @@ class UserActivitySeeder
     private const REPORT_YEAR = 2026;
     private const JUNE_PARTIAL_END_DAY = 7;
     private const SEED_MONTHS = [1, 2, 3, 4, 6];
-    private const CONNECTED_MARKETPLACES = ['Shopee', 'Tokopedia', 'Blibli'];
+    private const CONNECTED_MARKETPLACES = ['Shopee', 'Tokopedia', 'Blibli', 'Lazada'];
 
     private const MONTH_VOLUME = [
         1 => 1.00,
@@ -91,6 +91,7 @@ class UserActivitySeeder
             ['marketplace_name' => 'Tokopedia', 'marketplace_email' => 'tokopedia@test.local', 'password' => 'token_tokopedia', 'status' => 'connected'],
             ['marketplace_name' => 'Shopee', 'marketplace_email' => 'shopee@test.local', 'password' => 'token_shopee', 'status' => 'connected'],
             ['marketplace_name' => 'Blibli', 'marketplace_email' => 'blibli@test.local', 'password' => 'token_blibli', 'status' => 'connected'],
+            ['marketplace_name' => 'Lazada', 'marketplace_email' => 'lazada@test.local', 'password' => 'token_lazada', 'status' => 'connected'],
         ];
 
         foreach ($defaults as $mp) {
