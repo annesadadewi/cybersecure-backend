@@ -16,7 +16,7 @@ class NotificationController extends Controller
             'income' => ['label' => 'Pemasukan', 'badge' => 'green', 'is_refund' => false],
             'refund' => ['label' => 'Refund', 'badge' => 'red', 'is_refund' => true],
             'cancelled' => ['label' => 'Transaksi Dibatalkan', 'badge' => 'grey', 'is_refund' => false],
-            'return_request' => ['label' => 'Permintaan Retur Baru', 'badge' => 'yellow', 'is_refund' => false],
+            'return_request' => ['label' => 'Permintaan Retur Baru', 'badge' => 'yellow', 'is_refund' => true],
             'sync' => ['label' => 'Proses Sinkronisasi Toko', 'badge' => 'yellow', 'is_refund' => false],
             default => ['label' => 'Notifikasi', 'badge' => 'grey', 'is_refund' => false],
         };
